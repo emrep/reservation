@@ -1,6 +1,6 @@
 package com.hostfully.reservation.service;
 
-import com.hostfully.reservation.exception.EntityNotFoundException;
+import com.hostfully.reservation.exception.ItemNotFoundException;
 import com.hostfully.reservation.exception.OverlappingBookingException;
 import com.hostfully.reservation.model.Booking;
 import com.hostfully.reservation.model.Property;
@@ -29,7 +29,7 @@ public class BookingServiceImpl implements BookingService{
     public BookingResponse makeReservation(BookingRequest bookingRequest) {
         Optional<Property> property = propertyRepository.findById(bookingRequest.getPropertyId());
         if (property.isEmpty()) {
-            throw new EntityNotFoundException();
+            throw new ItemNotFoundException();
         }
         List<Long> overlappingBookings = bookingRepository.findOverlappingBookings(bookingRequest.getPropertyId(), bookingRequest.getStartDate(), bookingRequest.getEndDate());
         if (overlappingBookings.isEmpty()) {
