@@ -1,0 +1,5 @@
+INSERT INTO properties (id, name, is_active, created_at, version) VALUES ('0a598263-e5f7-437d-a998-624f10110f2d', 'property-01', true, parsedatetime('03-05-2022 11:37:52', 'MM-dd-yyyy HH:mm:ss'), 0);
+INSERT INTO properties (id, name, is_active, created_at, version) VALUES ('5226fac1-892a-4d93-a084-64e5a260c3aa', 'property-02', true, parsedatetime('03-05-2022 11:37:52', 'MM-dd-yyyy HH:mm:ss'), 0);
+INSERT INTO properties (id, name, is_active, created_at, version) VALUES ('87c39455-217c-45b3-b90f-ef3737f67a92', 'property-03', true, parsedatetime('03-05-2022 11:37:52', 'MM-dd-yyyy HH:mm:ss'), 0);
+INSERT INTO properties (id, name, is_active, created_at, version) VALUES ('395f25f7-6909-4128-a9e6-ce90f4c63eeb', 'property-04', true, parsedatetime('03-05-2022 11:37:52', 'MM-dd-yyyy HH:mm:ss'), 0);
+INSERT INTO properties (id, name, is_active, created_at, version) VALUES ('4a904691-d6f7-4018-a47e-3f9f0a560ae3', 'property-05', true, parsedatetime('03-05-2022 11:37:52', 'MM-dd-yyyy HH:mm:ss'), 0);
