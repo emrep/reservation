@@ -1,6 +1,6 @@
 package com.hostfully.reservation.service;
 
-import com.hostfully.reservation.exception.ItemNotFoundException;
+import com.hostfully.reservation.exception.InvalidBookingDateRangeException;
 import com.hostfully.reservation.exception.OverlappingBookingException;
 import com.hostfully.reservation.model.Booking;
 import com.hostfully.reservation.model.Property;
@@ -25,19 +25,24 @@ public class BookingServiceImpl implements BookingService{
     }
 
     @Override
+    public BookingResponse getBooking(Long bookingId) {
+        Optional<Booking> booking = bookingRepository.findById(bookingId);
+        return new BookingResponse(booking.orElseThrow());
+    }
+
+    @Override
     @Transactional
     public BookingResponse makeReservation(BookingRequest bookingRequest) {
-        Optional<Property> property = propertyRepository.findById(bookingRequest.getPropertyId());
-        if (property.isEmpty()) {
-            throw new ItemNotFoundException();
+        if (bookingRequest.getStartDate().isAfter(bookingRequest.getEndDate())) {
+            throw new InvalidBookingDateRangeException();
         }
+        Optional<Property> property = propertyRepository.findById(bookingRequest.getPropertyId());
         List<Long> overlappingBookings = bookingRepository.findOverlappingBookings(bookingRequest.getPropertyId(), bookingRequest.getStartDate(), bookingRequest.getEndDate());
         if (overlappingBookings.isEmpty()) {
-            Booking booking = bookingRepository.save(new Booking(property.get(), bookingRequest.getStartDate(), bookingRequest.getEndDate()));
+            Booking booking = bookingRepository.save(new Booking(property.orElseThrow(), bookingRequest.getStartDate(), bookingRequest.getEndDate()));
             return new BookingResponse(booking);
         } else {
             throw new OverlappingBookingException();
         }
-
     }
 }

@@ -18,8 +18,13 @@ public class ReservationController {
         this.bookingService = bookingService;
     }
 
+    @GetMapping("/bookings/{bookingId}")
+    public ResponseEntity<?> getBooking(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(bookingService.getBooking(bookingId));
+    }
+
     @PostMapping("/bookings")
-    public ResponseEntity<?> addFaculty(@Valid @RequestBody BookingRequest bookingRequest) {
+    public ResponseEntity<?> makeReservation(@Valid @RequestBody BookingRequest bookingRequest) {
         return ResponseEntity.ok(bookingService.makeReservation(bookingRequest));
     }
 }
