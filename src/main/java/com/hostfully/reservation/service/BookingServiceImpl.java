@@ -7,10 +7,7 @@ import com.hostfully.reservation.model.*;
 import com.hostfully.reservation.payload.request.BookingRequest;
 import com.hostfully.reservation.payload.request.BookingUpdateRequest;
 import com.hostfully.reservation.payload.response.BookingResponse;
-import com.hostfully.reservation.repository.BlockRepository;
-import com.hostfully.reservation.repository.BookingOperationRepository;
-import com.hostfully.reservation.repository.BookingRepository;
-import com.hostfully.reservation.repository.PropertyRepository;
+import com.hostfully.reservation.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -21,14 +18,16 @@ public class BookingServiceImpl implements BookingService{
 
     final BookingRepository bookingRepository;
     final PropertyRepository propertyRepository;
+    final UserRepository userRepository;
     final BlockRepository blockRepository;
     final BookingOperationRepository bookingOperationRepository;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               PropertyRepository propertyRepository,
-                              BlockRepository blockRepository, BookingOperationRepository bookingOperationRepository) {
+                              UserRepository userRepository, BlockRepository blockRepository, BookingOperationRepository bookingOperationRepository) {
         this.bookingRepository = bookingRepository;
         this.propertyRepository = propertyRepository;
+        this.userRepository = userRepository;
         this.blockRepository = blockRepository;
         this.bookingOperationRepository = bookingOperationRepository;
     }
@@ -46,8 +45,9 @@ public class BookingServiceImpl implements BookingService{
         Property property = propertyRepository.findById(bookingRequest.getPropertyId()).orElseThrow(); // lock the corresponding property row in the table
         checkOverlappingBookings(bookingRequest);
         checkBlockedDates(property, bookingRequest.getStartDate(), bookingRequest.getEndDate());
+        User guest = userRepository.findById(bookingRequest.getGuestId()).orElseThrow();
         Booking booking = bookingRepository.save(
-                new Booking(property, bookingRequest.getStartDate(), bookingRequest.getEndDate()));
+                new Booking(property, guest, bookingRequest.getStartDate(), bookingRequest.getEndDate()));
         createBookingOperation(booking, EnumOperationType.CREATION);
         return new BookingResponse(booking);
     }

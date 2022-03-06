@@ -11,14 +11,19 @@ public class Booking extends BaseModel {
     @JoinColumn(name="property_id")
     private Property property;
 
+    @ManyToOne
+    @JoinColumn(name="guest_id")
+    private User guest;
+
     @Basic
     private LocalDate startDate;
 
     @Basic
     private LocalDate endDate;
 
-    public Booking(Property property, LocalDate startDate, LocalDate endDate) {
+    public Booking(Property property, User guest, LocalDate startDate, LocalDate endDate) {
         this.property = property;
+        this.guest = guest;
         this.startDate = startDate;
         this.endDate = endDate;
     }
@@ -33,6 +38,14 @@ public class Booking extends BaseModel {
 
     public void setProperty(Property property) {
         this.property = property;
+    }
+
+    public User getGuest() {
+        return guest;
+    }
+
+    public void setGuest(User guest) {
+        this.guest = guest;
     }
 
     public LocalDate getStartDate() {

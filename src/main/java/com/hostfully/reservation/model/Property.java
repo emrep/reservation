@@ -1,8 +1,6 @@
 package com.hostfully.reservation.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
@@ -14,11 +12,23 @@ public class Property extends BaseModel {
     @Size(max = 150)
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name="owner_id")
+    private User owner;
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 }

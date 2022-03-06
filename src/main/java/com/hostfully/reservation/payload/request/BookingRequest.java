@@ -11,6 +11,9 @@ public class BookingRequest {
     private Long propertyId;
 
     @NotNull
+    private Long guestId;
+
+    @NotNull
     private LocalDate startDate;
 
     @NotNull
