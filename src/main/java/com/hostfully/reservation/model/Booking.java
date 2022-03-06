@@ -2,6 +2,7 @@ package com.hostfully.reservation.model;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(	name = "bookings")
@@ -16,6 +17,9 @@ public class Booking extends BaseModel {
 
     @Basic
     private LocalDate endDate;
+
+    @Basic
+    private LocalDateTime canceledAt;
 
     public Booking(Property property, LocalDate startDate, LocalDate endDate) {
         this.property = property;
@@ -49,5 +53,13 @@ public class Booking extends BaseModel {
 
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
+    }
+
+    public LocalDateTime getCanceledAt() {
+        return canceledAt;
+    }
+
+    public void setCanceledAt(LocalDateTime canceledAt) {
+        this.canceledAt = canceledAt;
     }
 }

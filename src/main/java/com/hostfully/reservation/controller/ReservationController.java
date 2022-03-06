@@ -24,7 +24,12 @@ public class ReservationController {
     }
 
     @PostMapping("/bookings")
-    public ResponseEntity<?> makeReservation(@Valid @RequestBody BookingRequest bookingRequest) {
-        return ResponseEntity.ok(bookingService.makeReservation(bookingRequest));
+    public ResponseEntity<?> book(@Valid @RequestBody BookingRequest bookingRequest) {
+        return ResponseEntity.ok(bookingService.book(bookingRequest));
+    }
+
+    @DeleteMapping("/bookings/{bookingId}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long bookingId) {
+        return ResponseEntity.ok(bookingService.cancelBooking(bookingId));
     }
 }

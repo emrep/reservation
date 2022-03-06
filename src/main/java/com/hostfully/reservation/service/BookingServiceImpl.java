@@ -10,6 +10,8 @@ import com.hostfully.reservation.repository.BookingRepository;
 import com.hostfully.reservation.repository.PropertyRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,13 +28,13 @@ public class BookingServiceImpl implements BookingService{
 
     @Override
     public BookingResponse getBooking(Long bookingId) {
-        Optional<Booking> booking = bookingRepository.findById(bookingId);
-        return new BookingResponse(booking.orElseThrow());
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
+        return new BookingResponse(booking);
     }
 
     @Override
     @Transactional
-    public BookingResponse makeReservation(BookingRequest bookingRequest) {
+    public BookingResponse book(BookingRequest bookingRequest) {
         if (bookingRequest.getStartDate().isAfter(bookingRequest.getEndDate())) {
             throw new InvalidBookingDateRangeException();
         }
@@ -44,5 +46,15 @@ public class BookingServiceImpl implements BookingService{
         } else {
             throw new OverlappingBookingException();
         }
+    }
+
+    @Override
+    @Transactional
+    public BookingResponse cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow();
+        booking.setActive(false);
+        booking.setCanceledAt(LocalDateTime.now());
+        bookingRepository.save(booking);
+        return new BookingResponse(booking);
     }
 }
