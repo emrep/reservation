@@ -1,36 +1,35 @@
 package com.hostfully.reservation.service;
 
+import com.hostfully.reservation.exception.BlockException;
 import com.hostfully.reservation.exception.InvalidBookingDateRangeException;
 import com.hostfully.reservation.exception.OverlappingBookingException;
-import com.hostfully.reservation.model.Booking;
-import com.hostfully.reservation.model.BookingOperation;
-import com.hostfully.reservation.model.EnumOperationType;
-import com.hostfully.reservation.model.Property;
+import com.hostfully.reservation.model.*;
 import com.hostfully.reservation.payload.request.BookingRequest;
 import com.hostfully.reservation.payload.request.BookingUpdateRequest;
 import com.hostfully.reservation.payload.response.BookingResponse;
+import com.hostfully.reservation.repository.BlockRepository;
 import com.hostfully.reservation.repository.BookingOperationRepository;
 import com.hostfully.reservation.repository.BookingRepository;
 import com.hostfully.reservation.repository.PropertyRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookingServiceImpl implements BookingService{
 
     final BookingRepository bookingRepository;
     final PropertyRepository propertyRepository;
+    final BlockRepository blockRepository;
     final BookingOperationRepository bookingOperationRepository;
 
     public BookingServiceImpl(BookingRepository bookingRepository,
                               PropertyRepository propertyRepository,
-                              BookingOperationRepository bookingOperationRepository) {
+                              BlockRepository blockRepository, BookingOperationRepository bookingOperationRepository) {
         this.bookingRepository = bookingRepository;
         this.propertyRepository = propertyRepository;
+        this.blockRepository = blockRepository;
         this.bookingOperationRepository = bookingOperationRepository;
     }
 
@@ -44,10 +43,11 @@ public class BookingServiceImpl implements BookingService{
     @Transactional
     public BookingResponse createBooking(BookingRequest bookingRequest) {
         checkBookingDateRange(bookingRequest.getStartDate(), bookingRequest.getEndDate());
-        Optional<Property> property = propertyRepository.findById(bookingRequest.getPropertyId()); // lock the corresponding property row in the table
+        Property property = propertyRepository.findById(bookingRequest.getPropertyId()).orElseThrow(); // lock the corresponding property row in the table
         checkOverlappingBookings(bookingRequest);
+        checkBlockedDates(property, bookingRequest.getStartDate(), bookingRequest.getEndDate());
         Booking booking = bookingRepository.save(
-                new Booking(property.orElseThrow(), bookingRequest.getStartDate(), bookingRequest.getEndDate()));
+                new Booking(property, bookingRequest.getStartDate(), bookingRequest.getEndDate()));
         createBookingOperation(booking, EnumOperationType.CREATION);
         return new BookingResponse(booking);
     }
@@ -57,8 +57,9 @@ public class BookingServiceImpl implements BookingService{
     public BookingResponse updateBooking(Long bookingId, BookingUpdateRequest bookingUpdateRequest) {
         Booking booking = bookingRepository.findById(bookingId).orElseThrow();
         checkBookingDateRange(bookingUpdateRequest.getStartDate(), bookingUpdateRequest.getEndDate());
-        propertyRepository.findById(booking.getProperty().getId()); // lock the corresponding property row in the table
+        Property property = propertyRepository.findById(booking.getProperty().getId()).orElseThrow(); // lock the corresponding property row in the table
         checkOverlappingBookingsForUpdate(booking, bookingUpdateRequest);
+        checkBlockedDates(property, bookingUpdateRequest.getStartDate(), bookingUpdateRequest.getEndDate());
         booking.setStartDate(bookingUpdateRequest.getStartDate());
         booking.setEndDate(bookingUpdateRequest.getEndDate());
         booking = bookingRepository.save(booking);
@@ -95,6 +96,14 @@ public class BookingServiceImpl implements BookingService{
                 booking.getProperty().getId(), booking.getId(), bookingUpdateRequest.getStartDate(), bookingUpdateRequest.getEndDate());
         if (!overlappingBookings.isEmpty()) {
             throw new OverlappingBookingException();
+        }
+    }
+
+    private void checkBlockedDates(Property property, LocalDate startDate, LocalDate endDate) {
+        List<Block> blocks = blockRepository.findAllByPropertyAndEndDateGreaterThanEqualAndStartDateLessThanEqualAndIsActive(
+                property, startDate, endDate, true);
+        if (!blocks.isEmpty()) {
+            throw new BlockException(blocks.get(0));
         }
     }
 
